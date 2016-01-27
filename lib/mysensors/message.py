@@ -1,4 +1,4 @@
-from mysensors import decode_message_type
+from mysensors import decode_message_type, decode_sub_type
 class Message:
   ##
   # node-id
@@ -23,7 +23,7 @@ class Message:
     self.child_sensor_id = int(child_sensor_id)
     self.message_type = decode_message_type(int(messsage_type))
     self.ack = ack
-    self.sub_type = sub_type
+    self.sub_type = decode_sub_type(self.message_type, int(sub_type))
     self.payload = payload
 
   def decode_payload(self):
@@ -32,3 +32,19 @@ class Message:
 
   def __str__(self):
     return "node_id={self.node_id} child_sensor_id={self.child_sensor_id} message_type={self.message_type} ack={self.ack} sub_type={self.sub_type} payload={self.payload}".format(self=self)
+
+def test_decode():
+  m = Message("12;6;0;0;3;My Light")
+  print m
+  assert m.message_type == 'M_PRESENTATION'
+  assert m.sub_type == "S_LIGHT"
+
+  m = Message("12;6;1;0;0;36.5")
+  print m
+  assert m.message_type == 'M_SET'
+  assert m.sub_type == "V_TEMP"
+
+  m = Message("13;7;1;0;2;1")
+  print m
+  assert m.message_type == 'M_SET'
+  assert m.sub_type == "V_LIGHT"
